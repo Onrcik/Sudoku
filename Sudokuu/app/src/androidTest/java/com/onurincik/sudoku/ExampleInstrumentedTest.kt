@@ -1,4 +1,4 @@
-package com.patrickfeltes.sudoku
+package com.onurincik.sudoku
 
 import android.support.test.InstrumentationRegistry
 import android.support.test.runner.AndroidJUnit4
@@ -19,6 +19,6 @@ class ExampleInstrumentedTest {
     fun useAppContext() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getTargetContext()
-        assertEquals("com.patrickfeltes.sudokuyoutube", appContext.packageName)
+        assertEquals("com.onurincik.sudoku", appContext.packageName)
     }
 }

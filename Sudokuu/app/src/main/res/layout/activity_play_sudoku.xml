@@ -5,9 +5,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#FDD835"
-    tools:context=".view.PlaySudokuActivity">
+    tools:context=".görünüm.PlaySudokuActivity">
 
-    <com.patrickfeltes.sudoku.view.custom.SudokuBoardView
+    <com.onurincik.sudoku.görünüm.custom.SudokuBoardView
         android:id="@+id/sudokuBoardView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

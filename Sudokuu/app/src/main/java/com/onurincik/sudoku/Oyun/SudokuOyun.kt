@@ -1,11 +1,11 @@
-package com.patrickfeltes.sudoku.game
+package com.onurincik.sudoku.Oyun
 
 import android.arch.lifecycle.MutableLiveData
 
-class SudokuGame {
+class SudokuOyun {
 
     var selectedCellLiveData = MutableLiveData<Pair<Int, Int>>()
-    var cellsLiveData = MutableLiveData<List<Cell>>()
+    var cellsLiveData = MutableLiveData<List<Hücre>>()
     val isTakingNotesLiveData = MutableLiveData<Boolean>()
     val highlightedKeysLiveData = MutableLiveData<Set<Int>>()
 
@@ -13,46 +13,46 @@ class SudokuGame {
     private var selectedCol = -1
     private var isTakingNotes = false
 
-    private val board: Board
+    private val yazıTahtam: YazıTahtam
 
     init {
-        val cells = List(9 * 9) {i -> Cell(i / 9, i % 9, i % 9)}
-        cells[0].notes = mutableSetOf(1, 2, 3, 4, 5, 6, 7, 8, 9)
-        board = Board(9, cells)
+        val cells = List(9 * 9) {i -> Hücre(i / 9, i % 9, i % 9)}
+        cells[0].notlar = mutableSetOf(1, 2, 3, 4, 5, 6, 7, 8, 9)
+        yazıTahtam = YazıTahtam(9, cells)
 
         selectedCellLiveData.postValue(Pair(selectedRow, selectedCol))
-        cellsLiveData.postValue(board.cells)
+        cellsLiveData.postValue(yazıTahtam.hücres)
         isTakingNotesLiveData.postValue(isTakingNotes)
     }
 
     fun handleInput(number: Int) {
         if (selectedRow == -1 || selectedCol == -1) return
-        val cell = board.getCell(selectedRow, selectedCol)
-        if (cell.isStartingCell) return
+        val cell = yazıTahtam.getCell(selectedRow, selectedCol)
+        if (cell.baslangıchücre) return
 
         if (isTakingNotes) {
-            if (cell.notes.contains(number)) {
-                cell.notes.remove(number)
+            if (cell.notlar.contains(number)) {
+                cell.notlar.remove(number)
             } else {
-                cell.notes.add(number)
+                cell.notlar.add(number)
             }
-            highlightedKeysLiveData.postValue(cell.notes)
+            highlightedKeysLiveData.postValue(cell.notlar)
         } else {
             cell.value = number
         }
-        cellsLiveData.postValue(board.cells)
+        cellsLiveData.postValue(yazıTahtam.hücres)
     }
 
 
     fun updateSelectedCell(row: Int, col: Int) {
-        val cell = board.getCell(row, col)
-        if (!cell.isStartingCell) {
+        val cell = yazıTahtam.getCell(row, col)
+        if (!cell.baslangıchücre) {
             selectedRow = row
             selectedCol = col
             selectedCellLiveData.postValue(Pair(row, col))
 
             if (isTakingNotes) {
-                highlightedKeysLiveData.postValue(cell.notes)
+                highlightedKeysLiveData.postValue(cell.notlar)
             }
         }
     }
@@ -62,7 +62,7 @@ class SudokuGame {
         isTakingNotesLiveData.postValue(isTakingNotes)
 
         val curNotes = if (isTakingNotes) {
-            board.getCell(selectedRow, selectedCol).notes
+            yazıTahtam.getCell(selectedRow, selectedCol).notlar
         } else {
             setOf<Int>()
         }
@@ -70,13 +70,13 @@ class SudokuGame {
     }
 
     fun delete() {
-        val cell = board.getCell(selectedRow, selectedCol)
+        val cell = yazıTahtam.getCell(selectedRow, selectedCol)
         if (isTakingNotes) {
-            cell.notes.clear()
+            cell.notlar.clear()
             highlightedKeysLiveData.postValue(setOf())
         } else {
             cell.value = 0
         }
-        cellsLiveData.postValue(board.cells)
+        cellsLiveData.postValue(yazıTahtam.hücres)
     }
 }

@@ -1,11 +1,11 @@
-package com.patrickfeltes.sudoku.view.custom
+package com.onurincik.sudoku.görünüm.custom
 
 import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
-import com.patrickfeltes.sudoku.game.Cell
+import com.onurincik.sudoku.Oyun.Hücre
 import kotlin.math.min
 
 class SudokuBoardView(context: Context, attributeSet: AttributeSet) : View(context, attributeSet) {
@@ -14,25 +14,25 @@ class SudokuBoardView(context: Context, attributeSet: AttributeSet) : View(conte
     private var size = 9
 
     // these are set in onDraw
-    private var cellSizePixels = 0F
-    private var noteSizePixels = 0F
+    private var numaraYaziPikseli = 0F
+    private var notYaziPikseli = 0F
 
-    private var selectedRow = 0
-    private var selectedCol = 0
+    private var secRow = 0
+    private var secCol = 0
 
     private var listener: SudokuBoardView.OnTouchListener? = null
 
-    private var cells: List<Cell>? = null
+    private var hücres: List<Hücre>? = null
 
     private val thickLinePaint = Paint().apply {
         style = Paint.Style.STROKE
         color = Color.BLACK
         strokeWidth = 4F
     }
-
+//İç hücre çizgilerini ayarlayan renk
     private val thinLinePaint = Paint().apply {
         style = Paint.Style.STROKE
-        color = Color.BLACK
+        color = Color.RED
         strokeWidth = 2F
     }
 
@@ -45,7 +45,7 @@ class SudokuBoardView(context: Context, attributeSet: AttributeSet) : View(conte
         style = Paint.Style.FILL_AND_STROKE
         color = Color.parseColor("#efedef")
     }
-
+//Yazıları ayarlayan renk kısmı
     private val textPaint = Paint().apply {
         style = Paint.Style.FILL_AND_STROKE
         color = Color.BLACK
@@ -59,7 +59,7 @@ class SudokuBoardView(context: Context, attributeSet: AttributeSet) : View(conte
 
     private val noteTextPaint = Paint().apply {
         style = Paint.Style.FILL_AND_STROKE
-        color = Color.BLACK
+        color = Color.BLUE
     }
 
     private val startingCellPaint = Paint().apply {
@@ -81,32 +81,32 @@ class SudokuBoardView(context: Context, attributeSet: AttributeSet) : View(conte
     }
 
     private fun updateMeasurements(width: Int) {
-        cellSizePixels = width / size.toFloat()
-        noteSizePixels = cellSizePixels / sqrtSize.toFloat()
-        noteTextPaint.textSize = cellSizePixels / sqrtSize.toFloat()
-        textPaint.textSize = cellSizePixels / 1.5F
-        startingCellTextPaint.textSize = cellSizePixels / 1.5F
+        numaraYaziPikseli = width / size.toFloat()
+        notYaziPikseli = numaraYaziPikseli / sqrtSize.toFloat()
+        noteTextPaint.textSize = numaraYaziPikseli / sqrtSize.toFloat()
+        textPaint.textSize = numaraYaziPikseli / 1.5F
+        startingCellTextPaint.textSize = numaraYaziPikseli / 1.5F
     }
 
     private fun fillCells(canvas: Canvas) {
-        cells?.forEach {
+        hücres?.forEach {
             val r = it.row
             val c = it.col
 
-            if (it.isStartingCell) {
+            if (it.baslangıchücre) {
                 fillCell(canvas, r, c, startingCellPaint)
-            } else if (r == selectedRow && c == selectedCol) {
+            } else if (r == secRow && c == secCol) {
                 fillCell(canvas, r, c, selectedCellPaint)
-            } else if (r == selectedRow || c == selectedCol) {
+            } else if (r == secRow || c == secCol) {
                 fillCell(canvas, r, c, conflictingCellPaint)
-            } else if (r / sqrtSize == selectedRow / sqrtSize && c / sqrtSize == selectedCol / sqrtSize) {
+            } else if (r / sqrtSize == secRow / sqrtSize && c / sqrtSize == secCol / sqrtSize) {
                 fillCell(canvas, r, c, conflictingCellPaint)
             }
         }
     }
 
     private fun fillCell(canvas: Canvas, r: Int, c: Int, paint: Paint) {
-        canvas.drawRect(c * cellSizePixels, r * cellSizePixels, (c + 1) * cellSizePixels, (r + 1) * cellSizePixels, paint)
+        canvas.drawRect(c * numaraYaziPikseli, r * numaraYaziPikseli, (c + 1) * numaraYaziPikseli, (r + 1) * numaraYaziPikseli, paint)
     }
 
     private fun drawLines(canvas: Canvas) {
@@ -119,30 +119,30 @@ class SudokuBoardView(context: Context, attributeSet: AttributeSet) : View(conte
             }
 
             canvas.drawLine(
-                    i * cellSizePixels,
+                    i * numaraYaziPikseli,
                     0F,
-                    i * cellSizePixels,
+                    i * numaraYaziPikseli,
                     height.toFloat(),
                     paintToUse
             )
 
             canvas.drawLine(
                     0F,
-                    i * cellSizePixels,
+                    i * numaraYaziPikseli,
                     width.toFloat(),
-                    i * cellSizePixels,
+                    i * numaraYaziPikseli,
                     paintToUse
             )
         }
     }
 
     private fun drawText(canvas: Canvas) {
-        cells?.forEach { cell ->
+        hücres?.forEach { cell ->
             val value = cell.value
 
             if (value == 0) {
                 // draw notes
-                cell.notes.forEach { note ->
+                cell.notlar.forEach { note ->
                     val rowInCell = (note - 1) / sqrtSize
                     val colInCell = (note - 1) % sqrtSize
                     val valueString = note.toString()
@@ -153,8 +153,8 @@ class SudokuBoardView(context: Context, attributeSet: AttributeSet) : View(conte
                     val textHeight = textBounds.height()
                     canvas.drawText(
                         valueString,
-                        (cell.col * cellSizePixels) + (colInCell * noteSizePixels) + noteSizePixels / 2 - textWidth / 2f,
-                        (cell.row * cellSizePixels) + (rowInCell * noteSizePixels) + noteSizePixels / 2 + textHeight / 2f,
+                        (cell.col * numaraYaziPikseli) + (colInCell * notYaziPikseli) + notYaziPikseli / 2 - textWidth / 2f,
+                        (cell.row * numaraYaziPikseli) + (rowInCell * notYaziPikseli) + notYaziPikseli / 2 + textHeight / 2f,
                         noteTextPaint
                     )
                 }
@@ -163,14 +163,14 @@ class SudokuBoardView(context: Context, attributeSet: AttributeSet) : View(conte
                 val col = cell.col
                 val valueString = cell.value.toString()
 
-                val paintToUse = if (cell.isStartingCell) startingCellTextPaint else textPaint
+                val paintToUse = if (cell.baslangıchücre) startingCellTextPaint else textPaint
                 val textBounds = Rect()
                 paintToUse.getTextBounds(valueString, 0, valueString.length, textBounds)
                 val textWidth = paintToUse.measureText(valueString)
                 val textHeight = textBounds.height()
 
-                canvas.drawText(valueString, (col * cellSizePixels) + cellSizePixels / 2 - textWidth / 2,
-                        (row * cellSizePixels) + cellSizePixels / 2 + textHeight / 2, paintToUse)
+                canvas.drawText(valueString, (col * numaraYaziPikseli) + numaraYaziPikseli / 2 - textWidth / 2,
+                        (row * numaraYaziPikseli) + numaraYaziPikseli / 2 + textHeight / 2, paintToUse)
             }
         }
     }
@@ -186,19 +186,19 @@ class SudokuBoardView(context: Context, attributeSet: AttributeSet) : View(conte
     }
 
     private fun handleTouchEvent(x: Float, y: Float) {
-        val possibleSelectedRow = (y / cellSizePixels).toInt()
-        val possibleSelectedCol = (x / cellSizePixels).toInt()
+        val possibleSelectedRow = (y / numaraYaziPikseli).toInt()
+        val possibleSelectedCol = (x / numaraYaziPikseli).toInt()
         listener?.onCellTouched(possibleSelectedRow, possibleSelectedCol)
     }
 
     fun updateSelectedCellUI(row: Int, col: Int) {
-        selectedRow = row
-        selectedCol = col
+        secRow = row
+        secCol = col
         invalidate()
     }
 
-    fun updateCells(cells: List<Cell>) {
-        this.cells = cells
+    fun updateCells(hücres: List<Hücre>) {
+        this.hücres = hücres
         invalidate()
     }
 
